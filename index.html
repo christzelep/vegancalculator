@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegan Nutrition Calculator</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --secondary: #8BC34A;
+            --accent: #FF9800;
+            --light: #F1F8E9;
+            --dark: #33691E;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover no-repeat;
+            border-radius: 15px;
+            position: relative;
+            margin-bottom: 30px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 100, 0, 0.4);
+            border-radius: 15px;
+        }
+        
+        header h1, header p {
+            position: relative;
+            z-index: 2;
+        }
+        
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .calculator-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: var(--primary);
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .tab.active {
+            background: var(--dark);
+            box-shadow: inset 0 -3px 0 var(--accent);
+        }
+        
+        .calculator-content {
+            padding: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: #F57C00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .results {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .nutrient {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #C5E1A5;
+        }
+        
+        .nutrient:last-child {
+            border-bottom: none;
+        }
+        
+        .nutrient-bar {
+            height: 8px;
+            background: #E0E0E0;
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .nutrient-fill {
+            height: 100%;
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+        
+        .limitation-box {
+            background: #FFF8E1;
+            border-left: 4px solid #FFC107;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 30px 0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .upgrade-section {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to right, #1B5E20, #2E7D32);
+            color: white;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .upgrade-btn {
+            background: var(--accent);
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            border-radius: 50px;
+            margin-top: 20px;
+            display: inline-block;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .upgrade-btn:hover {
+            background: #EF6C00;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        
+        .pro-badge {
+            background: #FF5722;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        
+        .locked-feature {
+            position: relative;
+            filter: blur(3px);
+            pointer-events: none;
+        }
+        
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vegan Nutrition Calculator</h1>
+            <p>Optimize your plant-based diet with our comprehensive tool</p>
+        </header>
+        
+        <div class="calculator-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="calories">Calories Counter</div>
+                <div class="tab" data-tab="nutrients">Nutrients Analysis</div>
+                <div class="tab locked-feature">
+                    <div class="locked-overlay">PRO</div>
+                    Meal Planner
+                </div>
+                <div class="tab locked-feature">
+                    <div class="locked-overlay">PRO</div>
+                    Recipe Analyzer
+                </div>
+            </div>
+            
+            <div class="calculator-content">
+                <!-- Calories Counter Tab -->
+                <div class="tab-content active" id="calories-content">
+                    <div class="input-group">
+                        <label for="food-item">Select Food Item:</label>
+                        <select id="food-item">
+                            <option value="apple">Apple (52 cal/100g)</option>
+                            <option value="banana">Banana (89 cal/100g)</option>
+                            <option value="tofu">Tofu (76 cal/100g)</option>
+                            <option value="quinoa">Quinoa (120 cal/100g)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="quantity">Quantity (grams):</label>
+                        <input type="number" id="quantity" value="100" min="1">
+                    </div>
+                    
+                    <button class="btn" id="calculate-calories">Calculate</button>
+                    
+                    <div class="results" id="calories-result">
+                        <h3>Nutritional Information</h3>
+                        <div class="nutrient">
+                            <span>Calories:</span>
+                            <span id="calories-value">0</span>
+                        </div>
+                        <div class="nutrient-bar">
+                            <div class="nutrient-fill" id="calories-bar" style="width: 0%"></div>
+                        </div>
+                        
+                        <div class="nutrient">
+                            <span>Protein:</span>
+                            <span id="protein-value">0g</span>
+                        </div>
+                        <div class="nutrient-bar">
+                            <div class="nutrient-fill" id="protein-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nutrients Analysis Tab -->
+                <div class="tab-content" id="nutrients-content">
+                    <div class="input-group">
+                        <label>Select Nutrients to Analyze:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="nutrients" value="protein" checked> Protein</label>
+                            <label><input type="checkbox" name="nutrients" value="iron"> Iron</label>
+                            <label><input type="checkbox" name="nutrients" value="calcium"> Calcium</label>
+                            <label><input type="checkbox" name="nutrients" value="b12" disabled> Vitamin B12 <span class="pro-badge">PRO</span></label>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="meals">Number of Daily Meals:</label>
+                        <input type="number" id="meals" value="3" min="1" max="6">
+                    </div>
+                    
+                    <button class="btn" id="analyze-nutrients">Analyze</button>
+                    
+                    <div class="results" id="nutrients-result">
+                        <h3>Nutrient Analysis</h3>
+                        <div id="nutrient-results-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="limitation-box">
+            <h3>Demo Version Limitations</h3>
+            <p>You're currently using the free version of our Vegan Nutrition Calculator. Unlock the full potential with PRO:</p>
+            <ul>
+                <li>🔒 Access to all nutrients (including B12, Zinc, Omega-3)</li>
+                <li>🔒 Meal planning and recipe analyzer</li>
+                <li>🔒 Personalized daily intake goals</li>
+                <li>🔒 Save and track your nutrition history</li>
+                <li>🔒 Environmental impact reports</li>
+            </ul>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Nutrition Tracking</h3>
+                <p>Track 10+ essential nutrients for optimal vegan health</p>
+            </div>
+            
+            <div class="feature-card locked-feature">
+                <div class="locked-overlay">PRO FEATURE</div>
+                <h3>Meal Planner</h3>
+                <p>Create personalized weekly meal plans</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>Food Database</h3>
+                <p>Access 100+ vegan foods with detailed nutrition</p>
+            </div>
+            
+            <div class="feature-card locked-feature">
+                <div class="locked-overlay">PRO FEATURE</div>
+                <h3>Recipe Analyzer</h3>
+                <p>Scan and analyze any recipe's nutritional value</p>
+            </div>
+        </div>
+        
+        <div class="upgrade-section">
+            <h2>Upgrade to PRO for Complete Nutrition Mastery</h2>
+            <p>Get unlimited access to all features and personalized insights</p>
+            <a href="https://yourdomain.com/vegan-calculator-pro.html" class="upgrade-btn">Upgrade Now - Only $9.99</a>
+            <p class="small">30-day money back guarantee</p>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                if(tab.classList.contains('locked-feature')) {
+                    document.querySelector('.upgrade-section').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    return;
+                }
+                
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Show corresponding content
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+        });
+        
+        // Calories Calculator
+        document.getElementById('calculate-calories').addEventListener('click', () => {
+            const food = document.getElementById('food-item').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            // Food database
+            const foods = {
+                apple: { calories: 52, protein: 0.3 },
+                banana: { calories: 89, protein: 1.1 },
+                tofu: { calories: 76, protein: 8.0 },
+                quinoa: { calories: 120, protein: 4.4 }
+            };
+            
+            const selectedFood = foods[food];
+            const calories = (selectedFood.calories * quantity / 100).toFixed(1);
+            const protein = (selectedFood.protein * quantity / 100).toFixed(1);
+            
+            // Display results
+            document.getElementById('calories-value').textContent = `${calories} kcal`;
+            document.getElementById('protein-value').textContent = `${protein}g`;
+            
+            // Animate bars
+            document.getElementById('calories-bar').style.width = '100%';
+            document.getElementById('protein-bar').style.width = `${Math.min(protein * 10, 100)}%`;
+            
+            // Show results
+            document.getElementById('calories-result').style.display = 'block';
+        });
+        
+        // Nutrients Analysis
+        document.getElementById('analyze-nutrients').addEventListener('click', () => {
+            const nutrients = Array.from(document.querySelectorAll('input[name="nutrients"]:checked'))
+                .map(input => input.value);
+            
+            const meals = parseInt(document.getElementById('meals').value);
+            
+            // Demo nutrient data
+            const nutrientData = {
+                protein: { value: '45g', daily: '75%' },
+                iron: { value: '18mg', daily: '100%' },
+                calcium: { value: '800mg', daily: '80%' },
+                b12: { value: '2.4μg', daily: '100%' }
+            };
+            
+            // Generate results
+            let resultsHTML = '';
+            
+            nutrients.forEach(nutrient => {
+                const data = nutrientData[nutrient];
+                resultsHTML += `
+                    <div class="nutrient">
+                        <span>${nutrient.charAt(0).toUpperCase() + nutrient.slice(1)}:</span>
+                        <span>${data.value} (${data.daily} DV)</span>
+                    </div>
+                    <div class="nutrient-bar">
+                        <div class="nutrient-fill" style="width: ${parseInt(data.daily)}%"></div>
+                    </div>
+                `;
+            });
+            
+            // Add locked B12 note
+            if(!nutrients.includes('b12')) {
+                resultsHTML += `
+                    <div class="nutrient" style="color: #F44336; margin-top: 15px;">
+                        <i class="fas fa-lock"></i> Vitamin B12 analysis available in PRO version
+                    </div>
+                `;
+            }
+            
+            document.getElementById('nutrient-results-container').innerHTML = resultsHTML;
+            document.getElementById('nutrients-result').style.display = 'block';
+        });
+        
+        // Scroll to upgrade section when clicking on locked features
+        document.querySelectorAll('.locked-feature').forEach(feature => {
+            feature.addEventListener('click', () => {
+                document.querySelector('.upgrade-section').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
